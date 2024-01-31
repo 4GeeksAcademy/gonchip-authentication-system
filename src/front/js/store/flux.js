@@ -12,8 +12,10 @@ const getState = ({ getStore, getActions, setStore }) => {
 					title: "SECOND",
 					background: "white",
 					initial: "white"
-				}
-			]
+				},
+			],
+			userCreated : false,
+			token: sessionStorage.getItem("token") || null
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -46,6 +48,52 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 				//reset the global store
 				setStore({ demo: demo });
+			},
+			registerUser : (user) =>{
+				let url = process.env.BACKEND_URL +"/api/singup"
+				fetch(url,{
+					method: "POST",
+					headers:{
+						"Content-Type":"application/json"
+					},
+					body: JSON.stringify(user)
+				})
+				.then(res =>{
+					if(res.status === 201){
+						setStore({
+							userCreated : true
+						})
+					}else{
+						setStore({
+							userCreated : false
+						})
+					}
+				})
+
+			},
+			login : (user) =>{
+				let url = process.env.BACKEND_URL + "/api/login"
+				fetch(url,{
+					method : "POST",
+					headers:{
+						"Content-Type":"application/json"
+					},
+					body: JSON.stringify(user)
+				})
+				.then(res => res.json())
+				.then(data => {
+					sessionStorage.setItem("token", data.token)
+					setStore({
+						token:data.token
+					})
+				
+			})
+			},
+			logout : () =>{
+				sessionStorage.removeItem("token")
+				setStore({
+					token:null
+				})
 			}
 		}
 	};
